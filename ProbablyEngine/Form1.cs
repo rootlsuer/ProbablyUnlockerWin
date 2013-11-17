@@ -27,23 +27,20 @@ namespace ProbablyEngine
             public string Name { get; set; }
         }
 
-        int address = (int) 0x8B1695;
-        byte[] patch = {0xEB, 0x36};
+        long address = (long) 0x7B2FC8;
+        byte[] patch = { 0xEB, 0x5A };
 
         public Form1()
         {
             InitializeComponent();
-            WinSparkle.win_sparkle_set_appcast_url("http://probablyengine.com/appcast-win.xml");
-            WinSparkle.win_sparkle_init();
         }
 
         private void OnApplicationExit(object sender, EventArgs e) {
-            WinSparkle.win_sparkle_cleanup();
         }
 
         private void populateList()
         {
-            Process[] processes = Process.GetProcessesByName("wow");
+            Process[] processes = Process.GetProcessesByName("wow-64");
             if (processes.Length > 0)
             {
                 dataSource = new List<Processes>();
@@ -86,7 +83,7 @@ namespace ProbablyEngine
             MemC.cOpenProcessId(SelectedProcessID);
 
             // rebase the address for the real pointer
-            int rebase = (int)Process.GetProcessById(SelectedProcessID).MainModule.BaseAddress + address;
+            long rebase = (long)Process.GetProcessById(SelectedProcessID).MainModule.BaseAddress + address;
 
             // pre-read before patch to check if we're patched or not
             byte[] preRead = MemC.readXBytes(rebase, 2);

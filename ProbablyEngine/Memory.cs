@@ -9,15 +9,15 @@ namespace MemoryControl
     public class MemC
     {
         [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool WriteProcessMemory(IntPtr hProcess, uint lpBaseAddress, byte[] lpBuffer, uint nSize, out int lpNumberOfBytesWritten);
+        public static extern bool WriteProcessMemory(IntPtr hProcess, ulong lpBaseAddress, byte[] lpBuffer, ulong nSize, out long lpNumberOfBytesWritten);
         [DllImport("kernel32.dll")]
-        public static extern int CloseHandle(IntPtr hObject);
+        public static extern long CloseHandle(IntPtr hObject);
         [DllImport("kernel32.dll")]
-        public static extern IntPtr OpenProcess(uint dwDesiredAccess, int bInheritHandle, uint dwProcessId);
+        public static extern IntPtr OpenProcess(ulong dwDesiredAccess, long bInheritHandle, ulong dwProcessId);
         [DllImport("kernel32.dll")]
-        public static extern int ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [In, Out] byte[] buffer, uint size, out IntPtr lpNumberOfBytesRead);
+        public static extern long ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [In, Out] byte[] buffer, ulong size, out IntPtr lpNumberOfBytesRead);
         [DllImport("kernel32.dll")]
-        public static extern unsafe bool VirtualProtect(IntPtr lpAddress, uint dwSize, uint flNewProtect, uint* lpflOldProtect);
+        public static extern unsafe bool VirtualProtect(IntPtr lpAddress, ulong dwSize, ulong flNewProtect, ulong* lpflOldProtect);
         [DllImport("kernel32")]
         public static extern UInt32 VirtualAlloc(UInt32 lpStartAddr, UInt32 size, UInt32 flAllocationType, UInt32 flProtect);
         [DllImport("kernel32")]
@@ -81,7 +81,7 @@ namespace MemoryControl
 
         public enum VirtualProtectSize
         {
-            INT = sizeof(int),
+            INT = sizeof(long),
             FLOAT = sizeof(float),
             DOUBLE = sizeof(double),
             CHAR = sizeof(char)
@@ -94,7 +94,7 @@ namespace MemoryControl
             var ApplicationXYZ = Process.GetProcessesByName(ProcessX)[0];
             AccessProcessTypes toAccess = AccessProcessTypes.PROCESS_VM_WRITE | AccessProcessTypes.PROCESS_VM_READ |
                                           AccessProcessTypes.PROCESS_VM_OPERATION;
-            cProcessHandle = OpenProcess((uint)toAccess, 1, (uint)ApplicationXYZ.Id);
+            cProcessHandle = OpenProcess((ulong)toAccess, 1, (ulong)ApplicationXYZ.Id);
         }
 
         public static void cOpenProcessId(int ProcessX)
@@ -102,7 +102,7 @@ namespace MemoryControl
             var ApplicationXYZ = Process.GetProcessById(ProcessX);
             AccessProcessTypes toAccess = AccessProcessTypes.PROCESS_VM_WRITE | AccessProcessTypes.PROCESS_VM_READ |
                                           AccessProcessTypes.PROCESS_VM_OPERATION;
-            cProcessHandle = OpenProcess((uint)toAccess, 1, (uint)ApplicationXYZ.Id);
+            cProcessHandle = OpenProcess((ulong)toAccess, 1, (ulong)ApplicationXYZ.Id);
         }
 
         public static void cCloseProcess()
@@ -117,98 +117,98 @@ namespace MemoryControl
             }
         }
 
-        public static int getProcessID(string AppX)
+        public static long getProcessID(string AppX)
         {
             var AppToID = Process.GetProcessesByName(AppX)[0];
-            int ID = AppToID.Id;
+            long ID = AppToID.Id;
             return ID;
         }
 
-        private static void WriteThis(IntPtr Address, byte[] XBytesToWrite, int nSizeToWrite)
+        private static void WriteThis(IntPtr Address, byte[] XBytesToWrite, long nSizeToWrite)
         {
-            int writtenBytes;
-            WriteProcessMemory(cProcessHandle, (uint)Address, XBytesToWrite, (uint)nSizeToWrite, out writtenBytes);
+            long writtenBytes;
+            WriteProcessMemory(cProcessHandle, (ulong)Address, XBytesToWrite, (ulong)nSizeToWrite, out writtenBytes);
         }
 
-        public static void WriteXNOP(int desiredAddress, int noOfNOPsToWrite)
+        public static void WriteXNOP(long desiredAddress, long noOfNOPsToWrite)
         {
             byte aNOP = 0x90;
             List<byte> nopList = new List<byte>();
-            for (int i = 0; i < noOfNOPsToWrite; i++)
+            for (long i = 0; i < noOfNOPsToWrite; i++)
                 nopList.Add(aNOP);
             byte[] nopBuffer = nopList.ToArray();
             WriteThis((IntPtr)desiredAddress, nopBuffer, noOfNOPsToWrite);
         }
 
-        public static void WriteXInt(int desiredAddrsss, int valToWrite)
+        public static void WriteXInt(long desiredAddrsss, long valToWrite)
         {
             byte[] valueToWrite = BitConverter.GetBytes(valToWrite);
             WriteThis((IntPtr)desiredAddrsss, valueToWrite, valueToWrite.Length);
         }
 
-        public static void WriteXFloat(int desiredAddrsss, float valToWrite)
+        public static void WriteXFloat(long desiredAddrsss, float valToWrite)
         {
             byte[] valueToWrite = BitConverter.GetBytes(valToWrite);
             WriteThis((IntPtr)desiredAddrsss, valueToWrite, valueToWrite.Length);
         }
 
-        public static void WriteXDouble(int desiredAddrsss, double valToWrite)
+        public static void WriteXDouble(long desiredAddrsss, double valToWrite)
         {
             byte[] valueToWrite = BitConverter.GetBytes(valToWrite);
             WriteThis((IntPtr)desiredAddrsss, valueToWrite, valueToWrite.Length);
         }
 
-        public static void WriteXString(int desiredAddrsss, string valToWrite)
+        public static void WriteXString(long desiredAddrsss, string valToWrite)
         {
             byte[] valueToWrite = Encoding.ASCII.GetBytes(valToWrite);
             WriteThis((IntPtr)desiredAddrsss, valueToWrite, valueToWrite.Length);
         }
 
-        public static unsafe void WriteXBytes(int desiredAddress, byte[] bytesToWrite)
+        public static unsafe void WriteXBytes(long desiredAddress, byte[] bytesToWrite)
         {
-            uint protection;
-            VirtualProtect((IntPtr)desiredAddress, (uint)bytesToWrite.Length,  (uint)0x40, &protection);
+            ulong protection;
+            VirtualProtect((IntPtr)desiredAddress, (ulong)bytesToWrite.Length,  (ulong)0x40, &protection);
             WriteThis((IntPtr)desiredAddress, bytesToWrite, bytesToWrite.Length);
-            VirtualProtect((IntPtr)desiredAddress, (uint)bytesToWrite.Length, protection, &protection);
+            VirtualProtect((IntPtr)desiredAddress, (ulong)bytesToWrite.Length, protection, &protection);
         }
 
-        public static byte[] readXBytes(int desiredAddress, int noOfBytesToRead)
+        public static byte[] readXBytes(long desiredAddress, long noOfBytesToRead)
         {
             byte[] buffer = new byte[noOfBytesToRead];
             IntPtr noOfBytesRead;
-            ReadProcessMemory(cProcessHandle, (IntPtr)desiredAddress, buffer, (uint)noOfBytesToRead, out noOfBytesRead);
+            ReadProcessMemory(cProcessHandle, (IntPtr)desiredAddress, buffer, (ulong)noOfBytesToRead, out noOfBytesRead);
             return buffer;
         }
 
-        public static int readXInt(int desiredAddress)
+        public static long readXInt(long desiredAddress)
         {
             byte[] buffer = new byte[0xFF];
             IntPtr noOfBytesRead;
-            ReadProcessMemory(cProcessHandle, (IntPtr)desiredAddress, buffer, (uint)4, out noOfBytesRead);
+            ReadProcessMemory(cProcessHandle, (IntPtr)desiredAddress, buffer, (ulong)4, out noOfBytesRead);
             return BitConverter.ToInt32(buffer, 0);
         }
 
-        public static float readXFloat(int desiredAddress)
+        public static float readXFloat(long desiredAddress)
         {
             byte[] buffer = new byte[0xFF];
             IntPtr noOfBytesRead;
-            ReadProcessMemory(cProcessHandle, (IntPtr)desiredAddress, buffer, (uint)4, out noOfBytesRead);
+            ReadProcessMemory(cProcessHandle, (IntPtr)desiredAddress, buffer, (ulong)4, out noOfBytesRead);
             return BitConverter.ToSingle(buffer, 0);
         }
 
-        public static double readXDouble(int desiredAddress)
+        public static double readXDouble(long desiredAddress)
         {
             byte[] buffer = new byte[0xFF];
             IntPtr noOfBytesRead;
-            ReadProcessMemory(cProcessHandle, (IntPtr)desiredAddress, buffer, (uint)4, out noOfBytesRead);
+            ReadProcessMemory(cProcessHandle, (IntPtr)desiredAddress, buffer, (ulong)4, out noOfBytesRead);
             return BitConverter.ToDouble(buffer, 0);
         }
 
-        public static string readXString(int desiredAddress, int sizeOfString)
+        public static string readXString(long desiredAddress, long sizeOfString)
         {
             byte[] buffer = new byte[sizeOfString];
             IntPtr noOfBytesRead;
-            ReadProcessMemory(cProcessHandle, (IntPtr)desiredAddress, buffer, (uint)sizeOfString, out noOfBytesRead);
+            ReadProcessMemory(cProcessHandle, (IntPtr)desiredAddress, buffer, (ulong)sizeOfString, out noOfBytesRead);
             return buffer.ToString();
         }
 
