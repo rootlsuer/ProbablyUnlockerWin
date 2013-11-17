@@ -82,9 +82,35 @@ namespace ProbablyEngine
 
         private void button2_Click(object sender, EventArgs e)
         {
+            // open the process
             MemC.cOpenProcessId(SelectedProcessID);
+
+            // rebase the address for the real pointer
             int rebase = (int)Process.GetProcessById(SelectedProcessID).MainModule.BaseAddress + address;
-            MemC.WriteXBytes(rebase, patch);
+
+            // pre-read before patch to check if we're patched or not
+            byte[] preRead = MemC.readXBytes(rebase, 2);
+
+            Console.WriteLine("Dump: " + BitConverter.ToString(preRead));
+            if (preRead[0] == patch[0] && preRead[1] == patch[1])
+            {
+                statusText.Text = "Already Patched!";
+            }
+            else
+            {
+                // write patch
+                MemC.WriteXBytes(rebase, patch);
+                // post read to check if we patched
+                byte[] postRead = MemC.readXBytes(rebase, 2);
+                if (postRead[0] == patch[0] && postRead[1] == patch[1])
+                {
+                    statusText.Text = "Sucessfully Patched!";
+                }
+                else
+                {
+                    statusText.Text = "Unable to verify patch.";
+                }
+            }
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)

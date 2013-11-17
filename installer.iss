@@ -3,7 +3,7 @@
 
 #define MyAppName "ProbablyEngine"
 #define MyAppVersion "1.0"
-#define MyAppBuild "17538"
+#define MyAppBuild "17538.2"
 #define MyAppPublisher "ProbablyEngine"
 #define MyAppURL "http://probablyengine.com/"
 #define MyAppExeName "ProbablyEngine.exe"
@@ -24,7 +24,7 @@ DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputBaseFilename=probablyengine-{#MyAppBuild}
-SetupIconFile=C:\Users\phelps\Documents\GitHub\ProbablyUnlockerWin\pe2.ico
+SetupIconFile=C:\Users\phelps\Documents\GitHub\ProbablyUnlockerWin\pe.ico
 Compression=lzma
 SolidCompression=yes
 WizardSmallImageFile=pe_small.bmp
