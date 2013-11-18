@@ -144,6 +144,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Taylor Milligan Davis.pfx" />
     <None Include="tmd.pfx" />
   </ItemGroup>
   <ItemGroup>
